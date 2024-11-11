@@ -4,7 +4,7 @@ from datetime import datetime
 
 class UserCreate(BaseModel):
     username: str
-    role: str  # Either 'admin' or 'user'
+    role: str
 
 
 class User(BaseModel):

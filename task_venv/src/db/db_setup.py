@@ -1,5 +1,3 @@
-# src/db/database_setup.py
-
 import psycopg2
 from psycopg2 import sql
 from db import DATABASE_URL
