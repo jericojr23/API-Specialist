@@ -7,6 +7,12 @@ from datetime import datetime
 from typing import List
 
 
+from datetime import datetime
+from typing import List
+import psycopg2
+from fastapi import HTTPException, status
+
+
 def get_all_users() -> List[User]:
     # Get all the users in the database
     conn = psycopg2.connect(DATABASE_URL)
@@ -14,9 +20,17 @@ def get_all_users() -> List[User]:
         with conn.cursor() as cur:
             cur.execute("SELECT username, role, created_at FROM users")
             users = cur.fetchall()
-            # Return the list of users
+
+            # Format created_at as a string for each user
             users = [
-                User(username=user[0], role=user[1], created_at=[2]) for user in users
+                User(
+                    username=user[0],
+                    role=user[1],
+                    created_at=user[2].strftime("%Y-%m-%d %H:%M:%S")
+                    if user[2]
+                    else None,
+                )
+                for user in users
             ]
             return users
     except Exception as e:
@@ -60,6 +74,27 @@ def create_user(user_create: UserCreate):
 
     except Exception as e:
         conn.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
+    finally:
+        conn.close()
+
+
+def get_user_role(username: str) -> str:
+    """Retrieve the role of a user from the database."""
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
+        with conn.cursor() as cur:
+            # Retrieve role of user from database
+            cur.execute("SELECT role FROM users WHERE username = %s", (username,))
+            user = cur.fetchone()
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+                )
+            return user[0]  # Return the role
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
