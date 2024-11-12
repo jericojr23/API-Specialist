@@ -50,26 +50,32 @@ This is a Task Management RESTful API built using **FastAPI** with role-based au
     ```
 
 4. Set up PostgreSQL:
-    - Create a new PostgreSQL database (e.g., `task_db`).
-    - Run the SQL scripts to create the `tasks` and `users` tables. The script is located at test/db_setup.py
+    - Create a new PostgreSQL database (e.g., `task_management`).
+    - Run the SQL scripts to create the `tasks` and `users` tables.
     - Make sure the database credentials are updated in the `DATABASE_URL` string.
 
     Example SQL to create tables:
+
     ```sql
-    CREATE TABLE tasks (
-        task_id SERIAL PRIMARY KEY,
-        title VARCHAR(255),
-        description TEXT,
-        due_date TIMESTAMP,
-        priority VARCHAR(50),
-        status VARCHAR(50),
-        creation_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        owner VARCHAR(255)
+    -- Users Table Schema
+    CREATE TABLE users (
+        user_id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        role VARCHAR(10) CHECK (role IN ('admin', 'user')) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
     );
 
-    CREATE TABLE users (
-        username VARCHAR(255) PRIMARY KEY,
-        role VARCHAR(50)
+    -- Tasks Table Schema
+    CREATE TABLE tasks (
+        task_id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        due_date DATE NOT NULL,
+        priority VARCHAR(10) CHECK (priority IN ('Low', 'Medium', 'High')),
+        status VARCHAR(20) CHECK (status IN ('Pending', 'In Progress', 'Completed')),
+        owner_id INT NOT NULL,
+        creation_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (owner_id) REFERENCES users (user_id) ON DELETE CASCADE
     );
     ```
 
