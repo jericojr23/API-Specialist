@@ -1,16 +1,11 @@
-from fastapi import HTTPException, status
+from datetime import datetime
+from typing import List
+
 import psycopg2
-from psycopg2 import sql
-from models.user import UserCreate, User
 from db.db import DATABASE_URL
-from datetime import datetime
-from typing import List
-
-
-from datetime import datetime
-from typing import List
-import psycopg2
 from fastapi import HTTPException, status
+from models.user import User, UserCreate
+from psycopg2 import sql
 
 
 def get_all_users() -> List[User]:
@@ -34,9 +29,7 @@ def get_all_users() -> List[User]:
             ]
             return users
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()
 
@@ -74,9 +67,7 @@ def create_user(user_create: UserCreate):
 
     except Exception as e:
         conn.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()
 
@@ -95,8 +86,19 @@ def get_user_role(username: str) -> str:
                 )
             return user[0]  # Return the role
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+
+def user_exists(user: UserCreate):
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM users WHERE username = %s", (user.username,))
+            result = cur.fetchone()
+            return result is not None
+    except Exception as e:
+        raise Exception(f"Error checking if user exists:{str(e)}")
     finally:
         conn.close()

@@ -1,9 +1,9 @@
-# main.py
-from fastapi import FastAPI
-from routes.user_routes import router  # Import router as it is defined
-from routes.task_routes import router
+from fastapi import FastAPI, HTTPException, status
+from routes.user import user_router  # Import router as it is defined
+from routes.task import task_router
 
 app = FastAPI()
 
 # Include the router
-app.include_router(router)
+app.include_router(user_router)
+app.include_router(task_router)

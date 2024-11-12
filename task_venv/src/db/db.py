@@ -8,7 +8,7 @@ DATABASE_URL = os.getenv(
     "dbname=task_db user=postgres password=1234 host=localhost port=5432",
 )
 
-# Create a connection pool
+# Database Connection Pool
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
 
 
